@@ -574,6 +574,10 @@ static const NSInteger MTLManagedObjectAdapterErrorExceptionThrown = 1;
 }
 
 - (NSPredicate *)uniquingPredicateForModel:(MTLModel<MTLManagedObjectSerializing> *)model {
+	return [self uniquingPredicateForModel:model relationshipKeyPath:nil];
+}
+
+- (NSPredicate *)uniquingPredicateForModel:(MTLModel<MTLManagedObjectSerializing> *)model relationshipKeyPath:(NSString *)keyPath {
 	NSSet *propertyKeys = nil;
 	if ([self.modelClass respondsToSelector:@selector(propertyKeysForManagedObjectUniquing)]) {
 		propertyKeys = [self.modelClass propertyKeysForManagedObjectUniquing];
@@ -583,7 +587,25 @@ static const NSInteger MTLManagedObjectAdapterErrorExceptionThrown = 1;
 	for (NSString *propertyKey in propertyKeys) {
 		NSString *managedObjectKey = [self managedObjectKeyForKey:propertyKey];
 		if (managedObjectKey) {
-			NSPredicate *subpredicate = [NSPredicate predicateWithFormat:@"%K == %@", managedObjectKey, [model valueForKeyPath:propertyKey]];
+			NSPredicate *subpredicate;
+			id value = [model valueForKey:propertyKey];
+			if ([value conformsToProtocol:@protocol(MTLManagedObjectSerializing)]) {
+				MTLModel<MTLManagedObjectSerializing> *model = value;
+				MTLManagedObjectAdapter *adapter = [[self.class alloc] initWithModelClass:model.class];
+
+				subpredicate = [adapter uniquingPredicateForModel:model relationshipKeyPath:managedObjectKey];
+			} else {
+
+				id transformedValue = value;
+				NSValueTransformer *attributeTransformer = [self entityAttributeTransformerForKey:propertyKey];
+				if (attributeTransformer != nil) transformedValue = [attributeTransformer transformedValue:transformedValue];
+
+				if (keyPath != nil) {
+					subpredicate = [NSPredicate predicateWithFormat:@"%K.%K == %@", keyPath, managedObjectKey, transformedValue];
+				} else {
+					subpredicate = [NSPredicate predicateWithFormat:@"%K == %@", managedObjectKey, transformedValue];
+				}
+			}
 			predicate = [NSCompoundPredicate andPredicateWithSubpredicates:(predicate ? @[predicate, subpredicate] : @[subpredicate])];
 		}
 	}
