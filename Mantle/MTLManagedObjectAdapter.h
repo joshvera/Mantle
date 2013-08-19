@@ -103,6 +103,8 @@
 // be used.
 + (NSDictionary *)relationshipModelClassesByPropertyKey;
 
++ (NSArray *)relationshipKeyPathsForPrefetching;
+
 // Overridden to deserialize a different class instead of the receiver, based on
 // information in the provided object.
 //

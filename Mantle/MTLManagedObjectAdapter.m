@@ -316,6 +316,9 @@ static const NSInteger MTLManagedObjectAdapterErrorExceptionThrown = 1;
 			fetchRequest.predicate = uniquingPredicate;
 			fetchRequest.returnsObjectsAsFaults = NO;
 			fetchRequest.fetchLimit = 1;
+			if ([model.class respondsToSelector:@selector(relationshipKeyPathsForPrefetching)]) {
+				fetchRequest.relationshipKeyPathsForPrefetching = [model.class relationshipKeyPathsForPrefetching];
+			}
 
 			NSArray *results = [context executeFetchRequest:fetchRequest error:&fetchRequestError];
 
