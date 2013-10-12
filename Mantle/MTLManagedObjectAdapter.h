@@ -42,11 +42,11 @@
 
 @optional
 
-// Specifies a set of property keys used by the adaptor to check for an already
+// Specifies a set of property keys used by the adapter to check for an already
 // existing managed object when converting the MTLModel to its related
 // NSManagedObject.
 //
-// The adaptor will first map any keys provided by this method to the correct
+// The adapter will first map any keys provided by this method to the correct
 // keys in managedObjectKeysByPropertyKey.
 //
 // The adapator will then perform a fetch request in the provided context for
@@ -62,7 +62,7 @@
 //
 // For example:
 // 1. An MTLModel subclass has id_number = 10.
-// 2. An NSManagedObject accessible to the adaptor's context has idnumber = 10.
+// 2. An NSManagedObject accessible to the adapter's context has idnumber = 10.
 // 3. managedObjectKeysByPropertyKey returns @{@"id_number" : @"idnumber"}
 // 4. propertyKeysForManagedObjectUniquing returns
 //    [NSSet setWithObject:@"id_number"];
@@ -138,6 +138,10 @@ extern const NSInteger MTLManagedObjectAdapterErrorInvalidManagedObjectKey;
 // MTLManagedObjectAdapter.
 extern const NSInteger MTLManagedObjectAdapterErrorUnsupportedManagedObjectPropertyType;
 
+// The fetch request to find an exisiting managed object based on
+// `+propertyKeysForManagedObjectUniquing` failed.
+extern const NSInteger MTLManagedObjectAdapterErrorUniqueFetchRequestFailed;
+
 // A MTLModel property cannot be serialized to or deserialized from an
 // NSManagedObject relationship.
 //
@@ -171,6 +175,6 @@ extern const NSInteger MTLManagedObjectAdapterErrorUnsupportedRelationshipClass;
 //           argument must not be nil.
 // error   - If not NULL, this may be set to an error that occurs during
 //           serialization or insertion.
-+ (NSManagedObject *)managedObjectFromModel:(MTLModel<MTLManagedObjectSerializing> *)model insertingIntoContext:(NSManagedObjectContext *)context error:(NSError **)error;
++ (id)managedObjectFromModel:(MTLModel<MTLManagedObjectSerializing> *)model insertingIntoContext:(NSManagedObjectContext *)context error:(NSError **)error;
 
 @end
