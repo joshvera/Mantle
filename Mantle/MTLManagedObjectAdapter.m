@@ -144,13 +144,7 @@ static const NSInteger MTLManagedObjectAdapterErrorExceptionThrown = 1;
 	CFDictionaryAddValue(processedObjects, (__bridge void *)managedObject, (__bridge void *)model);
 
 	BOOL (^setValueForKey)(NSString *, id) = ^(NSString *key, id value) {
-		// Mark this as being autoreleased, because validateValue may return
-		// a new object to be stored in this variable (and we don't want ARC to
-		// double-free or leak the old or new values).
-		__autoreleasing id replaceableValue = value;
-		if (![model validateValue:&replaceableValue forKey:key error:error]) return NO;
-
-		[model setValue:replaceableValue forKey:key];
+		[model setValue:value forKey:key];
 		return YES;
 	};
 
@@ -387,7 +381,7 @@ static const NSInteger MTLManagedObjectAdapterErrorExceptionThrown = 1;
 		if ([value isEqual:NSNull.null]) value = nil;
 
 		BOOL (^serializeAttribute)(NSAttributeDescription *) = ^(NSAttributeDescription *attributeDescription) {
-			// Mark this as being autoreleased, because validateValue may return
+			// Mark this as being autoreleased, because -transformedValue: may return
 			// a new object to be stored in this variable (and we don't want ARC to
 			// double-free or leak the old or new values).
 			__autoreleasing id transformedValue = value;
@@ -395,7 +389,6 @@ static const NSInteger MTLManagedObjectAdapterErrorExceptionThrown = 1;
 			NSValueTransformer *attributeTransformer = [self entityAttributeTransformerForKey:propertyKey];
 			if (attributeTransformer != nil) transformedValue = [attributeTransformer transformedValue:transformedValue];
 
-			if (![managedObject validateValue:&transformedValue forKey:managedObjectKey error:error]) return NO;
 			[managedObject setValue:transformedValue forKey:managedObjectKey];
 
 			return YES;
@@ -502,13 +495,6 @@ static const NSInteger MTLManagedObjectAdapterErrorExceptionThrown = 1;
 			*stop = YES;
 		}
 	}];
-
-	if (managedObject != nil && ![managedObject validateForInsert:error]) {
-		performInContext(context, ^ id {
-			[context deleteObject:managedObject];
-			return nil;
-		});
-	}
 
 	if (error != NULL) {
 		*error = tmpError;
