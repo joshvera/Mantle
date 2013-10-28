@@ -177,4 +177,25 @@ extern const NSInteger MTLManagedObjectAdapterErrorUnsupportedRelationshipClass;
 //           serialization or insertion.
 + (id)managedObjectFromModel:(MTLModel<MTLManagedObjectSerializing> *)model insertingIntoContext:(NSManagedObjectContext *)context error:(NSError **)error;
 
++ (id)managedObjectFromModel:(MTLModel<MTLManagedObjectSerializing> *)model insertingIntoContext:(NSManagedObjectContext *)context processedObjects:(CFMutableDictionaryRef)processedObjects error:(NSError **)error;
+
+- (id)initWithModelClass:(Class)modelClass;
+
+// Looks up the managed object key that corresponds to the given key.
+//
+// key - The property key to retrieve the corresponding managed object key for.
+//       This argument must not be nil.
+//
+// Returns a key to use, or nil to omit the property from managed object
+// serialization.
+- (NSString *)managedObjectKeyForKey:(NSString *)key;
+
+// Looks up the NSValueTransformer that should be used for any attribute that
+// corresponds the given property key.
+//
+// key - The property key to transform from or to. This argument must not be nil.
+//
+// Returns a transformer to use, or nil to not transform the property.
+- (NSValueTransformer *)entityAttributeTransformerForKey:(NSString *)key;
+
 @end
