@@ -372,6 +372,11 @@ static const NSInteger MTLManagedObjectAdapterErrorExceptionThrown = 1;
 			NSValueTransformer *attributeTransformer = [self entityAttributeTransformerForKey:propertyKey];
 			if (attributeTransformer != nil) transformedValue = [attributeTransformer transformedValue:transformedValue];
 
+			BOOL shouldUnique = [[model.class propertyKeysForManagedObjectUniquing] containsObject:propertyKey];
+
+			if (shouldUnique && [[managedObject valueForKey:managedObjectKey] isEqual:transformedValue])
+				return YES;
+
 			[managedObject setValue:transformedValue forKey:managedObjectKey];
 
 			return YES;
